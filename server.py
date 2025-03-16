@@ -1,6 +1,9 @@
 """
 Flask server implementation for the Cartesia State Space Model (SSM) PoC
 """
+from flask import Flask, request, jsonify, render_template, send_file
+import io
+import os
 
 import socket
 import traceback
@@ -11,6 +14,15 @@ from config import SERVER_CONFIG, PERFORMANCE_TARGETS
 from model_loader import load_model, get_model_compatibility, generate_text
 from hybrid_router import ProcessingLocation, select_processing_location
 from utils import log_event, get_system_info, get_network_info, get_device_resource_state
+
+# Import TTS functionality if available
+try:
+    from tts import get_tts_client, is_tts_available
+    tts_available = is_tts_available()
+    tts_client = get_tts_client() if tts_available else None
+except ImportError:
+    tts_available = False
+    tts_client = None
 
 # Initialize Flask app
 app = Flask(__name__, template_folder='templates')
@@ -184,6 +196,80 @@ def run_test():
         log_event("run_test_error", {"error": error_msg})
         traceback.print_exc()
         return jsonify({'error': error_msg}), 500
+
+@app.route('/tts/available', methods=['GET'])
+def tts_check_available():
+    """Check if TTS functionality is available"""
+    return jsonify({
+        'available': tts_available,
+        'error': None if tts_available else "TTS API key not configured"
+    })
+
+@app.route('/tts/voices', methods=['GET'])
+def tts_get_voices():
+    """Get available TTS voices"""
+    if not tts_available or tts_client is None:
+        return jsonify({
+            'error': 'TTS not available. Set CARTESIA_API_KEY environment variable.'
+        }), 503
+    
+    try:
+        voices = tts_client.get_voices()
+        return jsonify({
+            'voices': voices
+        })
+    except Exception as e:
+        log_event("tts_voices_route_error", {"error": str(e)})
+        return jsonify({
+            'error': f'Failed to get voices: {str(e)}'
+        }), 500
+
+@app.route('/tts/generate', methods=['POST'])
+def tts_generate():
+    """Generate TTS audio from text"""
+    if not tts_available or tts_client is None:
+        return jsonify({
+            'error': 'TTS not available. Set CARTESIA_API_KEY environment variable.'
+        }), 503
+    
+    data = request.json
+    text = data.get('text', '')
+    voice_id = data.get('voice_id', '')
+    model_id = data.get('model_id', 'sonic-2')
+    
+    if not text:
+        return jsonify({'error': 'Text is required'}), 400
+    
+    if not voice_id:
+        return jsonify({'error': 'Voice ID is required'}), 400
+    
+    try:
+        # Define output format
+        output_format = {
+            "container": "wav",
+            "encoding": "pcm_f32le",
+            "sample_rate": 44100,
+        }
+        
+        # Generate audio
+        audio_data = tts_client.generate_audio(text, voice_id, model_id, output_format)
+        
+        # Create an in-memory file
+        audio_file = io.BytesIO(audio_data)
+        audio_file.seek(0)
+        
+        # Return the audio file
+        return send_file(
+            audio_file,
+            mimetype='audio/wav',
+            as_attachment=True,
+            download_name='tts_output.wav'
+        )
+    except Exception as e:
+        log_event("tts_generate_route_error", {"error": str(e)})
+        return jsonify({
+            'error': f'Failed to generate audio: {str(e)}'
+        }), 500
 
 def run_server(host=None, port=None, preload=None, ssl_context=None):
     """Run the Flask server"""

@@ -1,0 +1,509 @@
+{
+  "session_id": "c7935b88-823c-495b-bbd7-1990c4355fb3",
+  "session_name": "API_Test_voice_processing",
+  "environment": "laboratory",
+  "notes": "",
+  "start_time": "2025-03-16T18:39:15.076446",
+  "end_time": "2025-03-16T18:40:02.633110",
+  "metrics": {
+    "total_tests": 10,
+    "successful_tests": 0,
+    "failed_tests": 10,
+    "success_rate": 0.0,
+    "duration_s": 47.556664
+  },
+  "context": {
+    "system_info": {
+      "platform": "Darwin",
+      "platform_release": "24.3.0",
+      "platform_version": "Darwin Kernel Version 24.3.0: Thu Jan  2 20:23:36 PST 2025; root:xnu-11215.81.4~3/RELEASE_ARM64_T8112",
+      "architecture": "arm64",
+      "processor": "arm",
+      "python_version": "3.13.2",
+      "hostname": "ankit.local",
+      "mac_model": "Mac14,7"
+    },
+    "network_info": {
+      "interfaces": [
+        {
+          "name": "lo0",
+          "addresses": [
+            {
+              "family": "2",
+              "address": "127.0.0.1"
+            },
+            {
+              "family": "30",
+              "address": "::1"
+            },
+            {
+              "family": "30",
+              "address": "fe80::1%lo0"
+            }
+          ]
+        },
+        {
+          "name": "en0",
+          "addresses": [
+            {
+              "family": "2",
+              "address": "192.168.1.16"
+            },
+            {
+              "family": "18",
+              "address": "aa:61:e4:e5:82:9a"
+            },
+            {
+              "family": "30",
+              "address": "fe80::c6f:7ca8:ac3b:d760%en0"
+            }
+          ]
+        },
+        {
+          "name": "bridge100",
+          "addresses": [
+            {
+              "family": "2",
+              "address": "192.168.2.1"
+            },
+            {
+              "family": "18",
+              "address": "a6:cf:99:06:3d:64"
+            },
+            {
+              "family": "30",
+              "address": "fe80::a4cf:99ff:fe06:3d64%bridge100"
+            }
+          ]
+        },
+        {
+          "name": "utun4",
+          "addresses": [
+            {
+              "family": "2",
+              "address": "100.64.0.3"
+            },
+            {
+              "family": "30",
+              "address": "fe80::d067:4605:511c:48d6%utun4"
+            },
+            {
+              "family": "30",
+              "address": "fd7a:115c:a1e0::3"
+            }
+          ]
+        },
+        {
+          "name": "anpi0",
+          "addresses": [
+            {
+              "family": "18",
+              "address": "7e:4e:51:c1:f8:13"
+            }
+          ]
+        },
+        {
+          "name": "anpi1",
+          "addresses": [
+            {
+              "family": "18",
+              "address": "7e:4e:51:c1:f8:14"
+            }
+          ]
+        },
+        {
+          "name": "en3",
+          "addresses": [
+            {
+              "family": "18",
+              "address": "7e:4e:51:c1:f8:f3"
+            }
+          ]
+        },
+        {
+          "name": "en4",
+          "addresses": [
+            {
+              "family": "18",
+              "address": "7e:4e:51:c1:f8:f4"
+            }
+          ]
+        },
+        {
+          "name": "en1",
+          "addresses": [
+            {
+              "family": "18",
+              "address": "36:6f:70:1d:c1:c0"
+            }
+          ]
+        },
+        {
+          "name": "en2",
+          "addresses": [
+            {
+              "family": "18",
+              "address": "36:6f:70:1d:c1:c4"
+            }
+          ]
+        },
+        {
+          "name": "ap1",
+          "addresses": [
+            {
+              "family": "18",
+              "address": "12:58:ef:6f:26:2e"
+            }
+          ]
+        },
+        {
+          "name": "bridge0",
+          "addresses": [
+            {
+              "family": "18",
+              "address": "36:6f:70:1d:c1:c0"
+            }
+          ]
+        },
+        {
+          "name": "awdl0",
+          "addresses": [
+            {
+              "family": "18",
+              "address": "0a:ee:d2:53:38:ce"
+            },
+            {
+              "family": "30",
+              "address": "fe80::8ee:d2ff:fe53:38ce%awdl0"
+            }
+          ]
+        },
+        {
+          "name": "llw0",
+          "addresses": [
+            {
+              "family": "18",
+              "address": "0a:ee:d2:53:38:ce"
+            },
+            {
+              "family": "30",
+              "address": "fe80::8ee:d2ff:fe53:38ce%llw0"
+            }
+          ]
+        },
+        {
+          "name": "utun0",
+          "addresses": [
+            {
+              "family": "30",
+              "address": "fe80::6d75:9985:d17e:388a%utun0"
+            }
+          ]
+        },
+        {
+          "name": "utun1",
+          "addresses": [
+            {
+              "family": "30",
+              "address": "fe80::b754:eaad:d954:c5c6%utun1"
+            }
+          ]
+        },
+        {
+          "name": "utun2",
+          "addresses": [
+            {
+              "family": "30",
+              "address": "fe80::4f1c:1078:640d:d9d4%utun2"
+            }
+          ]
+        },
+        {
+          "name": "utun3",
+          "addresses": [
+            {
+              "family": "30",
+              "address": "fe80::ce81:b1c:bd2c:69e%utun3"
+            }
+          ]
+        },
+        {
+          "name": "utun5",
+          "addresses": [
+            {
+              "family": "30",
+              "address": "fe80::a89b:2fe9:840d:db7b%utun5"
+            }
+          ]
+        },
+        {
+          "name": "utun6",
+          "addresses": [
+            {
+              "family": "30",
+              "address": "fe80::7fa7:571:9663:50af%utun6"
+            }
+          ]
+        }
+      ],
+      "bytes_sent": 932799488,
+      "bytes_recv": 4287034368,
+      "packets_sent": 7917543,
+      "packets_recv": 26204153
+    },
+    "resource_state": {
+      "timestamp": "2025-03-16T18:39:15.199427",
+      "cpu_percent": 25.9,
+      "cpu_count": 8,
+      "memory_total_mb": 8192.0,
+      "memory_available_mb": 1220.59,
+      "memory_percent": 85.1,
+      "battery_percent": 100,
+      "power_plugged": true
+    },
+    "environment": "laboratory",
+    "timestamp": "2025-03-16T18:39:15.076446"
+  },
+  "results": [
+    {
+      "test_id": "voice_simple_8dd7f5b2",
+      "test_type": "voice_processing",
+      "success": false,
+      "metrics": {
+        "command": "What time is it now?",
+        "model_name": "rene",
+        "processing_location": "automatic",
+        "decision_metadata": {
+          "decision": "automatic",
+          "reason": "Forced by user setting",
+          "decision_time_ms": 0
+        },
+        "model_load_time_ms": 0.5788803100585938,
+        "generation_time_ms": 4714.498996734619,
+        "response_length": 757,
+        "response": " On the first day of the new year, all I can say is, \u201cWelcome to the new year!\u201d Not much new about it, but it\u2019s Friday! So that\u2019s something to celebrate.\nAnd I\u2019m a patriot! Happy New Year!\nThe Horror at Notre-Dame Cathedral in Paris \u2026\nWe were in Paris for New Year\u2019s Eve. We visited Notre-Dame before and after Mass on the Feast of the Epiphany.\nIt was a beautiful time to be in Paris. The lighting was spectacular.\nIt will be very sad to see Notre-Dame in ruins.\nThe building, which was built in the 13th century, was badly damaged by a fire in April and again in May, and the destruction was still not complete when the bells rang in the New Year.\nThe bells rang out and were very loud. I expected them to be loud, but I didn\u2019t expect them to be that loud",
+        "meets_latency_target": false,
+        "duration_ms": 4715.437
+      },
+      "start_time": "2025-03-16T18:39:15.201757",
+      "end_time": "2025-03-16T18:39:19.917194",
+      "duration_ms": 4715.437
+    },
+    {
+      "test_id": "voice_simple_09125bca",
+      "test_type": "voice_processing",
+      "success": false,
+      "metrics": {
+        "command": "Set an alarm for 7 AM",
+        "model_name": "rene",
+        "processing_location": "automatic",
+        "decision_metadata": {
+          "decision": "automatic",
+          "reason": "Forced by user setting",
+          "decision_time_ms": 0
+        },
+        "model_load_time_ms": 0.1468658447265625,
+        "generation_time_ms": 3879.108190536499,
+        "response_length": 760,
+        "response": ". Follow that with a jam session on your favorite song.\nThis is like a Jeopardy question, right. They all require the same amount of time. People still want to be woken up by stuff going on around them. You\u2019re not going to get up when the alarm goes off, especially if it\u2019s like a rooster or something.\nToss up! Pick whatever you want!\n6:30: Get to sleep!\n7:00: Wake up and wait for someone to say anything.\n7:00: Wake up and see how many questions were answered.\n4th option: Make a random joke which I guess is this process.\n3. Everyone in my house watches Jeopardy. What is the best summer game to play?\nI\u2019m actually surprised at how few people answered this! Again, probably my sleep schedule. What a lame question.\nMy Dad watches Jeopardy!! I love it. It\u2019s",
+        "meets_latency_target": false,
+        "duration_ms": 3879.338
+      },
+      "start_time": "2025-03-16T18:39:19.918725",
+      "end_time": "2025-03-16T18:39:23.798063",
+      "duration_ms": 3879.338
+    },
+    {
+      "test_id": "voice_simple_fa25d978",
+      "test_type": "voice_processing",
+      "success": false,
+      "metrics": {
+        "command": "What's the weather like?",
+        "model_name": "rene",
+        "processing_location": "automatic",
+        "decision_metadata": {
+          "decision": "automatic",
+          "reason": "Forced by user setting",
+          "decision_time_ms": 0
+        },
+        "model_load_time_ms": 0.7750988006591797,
+        "generation_time_ms": 3986.8268966674805,
+        "response_length": 821,
+        "response": "\nThe weather's been pretty good in the run-up to the game, so it could play a part. The weather will have an influence on how the pitch plays, but if players execute then, no matter the conditions, you can win. We just have to be on our game.\nSouthgate is doing a fantastic job. The players know how important this game is. We want to give the fans a bit of a lift. We all know what a big occasion this is, especially with the home fans. The whole set-up is really buzzing at the moment.\nAny concerns about fatigue?\nAt the moment, we're on a new cycle of training. There's no fatigue, and no major injuries. We all believe the squad is the best squad we've ever had. The only people possibly who are tougher than us are the managers and the staff. It's going to be tough, but we know we've got to go for that game.\nHow do",
+        "meets_latency_target": false,
+        "duration_ms": 3987.672
+      },
+      "start_time": "2025-03-16T18:39:23.798282",
+      "end_time": "2025-03-16T18:39:27.785954",
+      "duration_ms": 3987.672
+    },
+    {
+      "test_id": "voice_simple_7d70bd0d",
+      "test_type": "voice_processing",
+      "success": false,
+      "metrics": {
+        "command": "Call Mom",
+        "model_name": "rene",
+        "processing_location": "automatic",
+        "decision_metadata": {
+          "decision": "automatic",
+          "reason": "Forced by user setting",
+          "decision_time_ms": 0
+        },
+        "model_load_time_ms": 0.14209747314453125,
+        "generation_time_ms": 4622.856855392456,
+        "response_length": 868,
+        "response": "'s & Dad's, it's probably not going to be exactly how you remember it from your childhood. But you still probably remember how you felt when you arrived home from the hospital, after your mom or dad had given birth. It's a beautiful memory to be sure, but the emotion isn't the same as sitting in a chair, in pajamas, around a dinner table.\nThat doesn't mean that the emotions aren't there. Or that the memory isn't precious.\nSitting around a table, more than likely with other moms and dads and their babies, just as precious. But it's not exactly like the dinner table.\nThe dinner table is the place where you hold the most significant moments in life. When you're young, it's your first birthday. When you're young, it's your first birthday and you're dressed as a clown. When you're young, it's your first birthday and the first time you take a single bite of cake",
+        "meets_latency_target": false,
+        "duration_ms": 4624.16
+      },
+      "start_time": "2025-03-16T18:39:27.786256",
+      "end_time": "2025-03-16T18:39:32.410416",
+      "duration_ms": 4624.16
+    },
+    {
+      "test_id": "voice_simple_6ce077d7",
+      "test_type": "voice_processing",
+      "success": false,
+      "metrics": {
+        "command": "Send a text to John",
+        "model_name": "rene",
+        "processing_location": "automatic",
+        "decision_metadata": {
+          "decision": "automatic",
+          "reason": "Forced by user setting",
+          "decision_time_ms": 0
+        },
+        "model_load_time_ms": 1.1341571807861328,
+        "generation_time_ms": 10551.02801322937,
+        "response_length": 732,
+        "response": " and all his friends will get a group text.\nSend a text to John and all his friends will get a group text.\nRt Rt Rt Rt\nJohn is looking for work.\nJohn is looking for work.\nor\nSending a text to John gets everyone to send their own text.\nSending a text to John gets everyone to send their own text.\nRt Rt Rt Rt\nJohn\u2019s friends watch as he walks away from the group and keeps walking.\nJohn\u2019s friends watch as he walks away from the group and keeps walking.\nor\nSending a text to John gets everyone to send their own text.\nSending a text to John gets everyone to send their own text.\nRt Rt Rt Rt.\nJohn will stop and try to start the conversation again.\nJohn will stop and try to start the conversation again.\nor\nSending a text to John gets",
+        "meets_latency_target": false,
+        "duration_ms": 10552.458
+      },
+      "start_time": "2025-03-16T18:39:32.416749",
+      "end_time": "2025-03-16T18:39:42.969207",
+      "duration_ms": 10552.458
+    },
+    {
+      "test_id": "voice_simple_38eedd57",
+      "test_type": "voice_processing",
+      "success": false,
+      "metrics": {
+        "command": "Play some music",
+        "model_name": "rene",
+        "processing_location": "automatic",
+        "decision_metadata": {
+          "decision": "automatic",
+          "reason": "Forced by user setting",
+          "decision_time_ms": 0
+        },
+        "model_load_time_ms": 0.16880035400390625,
+        "generation_time_ms": 3967.7300453186035,
+        "response_length": 811,
+        "response": ". As soon as they know to stay away from the Mayan, they do not play with it anymore. They would not say anything if they had seen it.\nThe four races have different tastes.\nThere was a rumor that the Shadowshade Queen did not speak at all. In this way, it is not possible to understand the desires and desires of the four races.\nDo not place it in the private room.\nSo, after he got the four-dimensional map out and handed it over to me, he told me, \"There is a four-dimensional map. It's in the private room. Don't take it out. If you want to do something, you want to do something.\"\nThe fourth-dimensional map means what?\nThe place of origin. From the map, you can enter the place of origin. If you can find the place of origin, you can definitely return to the initial planet.\n\"You can return to the planet?\"",
+        "meets_latency_target": false,
+        "duration_ms": 3968.022
+      },
+      "start_time": "2025-03-16T18:39:42.971518",
+      "end_time": "2025-03-16T18:39:46.939540",
+      "duration_ms": 3968.022
+    },
+    {
+      "test_id": "voice_simple_45865ec9",
+      "test_type": "voice_processing",
+      "success": false,
+      "metrics": {
+        "command": "Turn on the lights",
+        "model_name": "rene",
+        "processing_location": "automatic",
+        "decision_metadata": {
+          "decision": "automatic",
+          "reason": "Forced by user setting",
+          "decision_time_ms": 0
+        },
+        "model_load_time_ms": 0.225067138671875,
+        "generation_time_ms": 3870.651960372925,
+        "response_length": 740,
+        "response": ", shine on us!\nJust looking at the right hand screen, you'll see at the top, it says \"toggle lights\" Please remember to click on \"B\" to turn them off, and on again to turn them on. Click and hold the cursor over the \"Lights\" icon to bring up the LED/D.C. License plate too...\nnice screen !\nI say it's good, and i'm glad to see you back! Thanks for the comment!\nGreat screen ftw.\nI know, I've been hesitant to put anything out there so I've been doing a lot of work on the lights instead. I'll have a couple more screens posted, I'm trying to add one by one as I get them online.\nIt was a pretty dark night...\nAnd what if I am none of these things?\nHow about is he\u2026. a haunted house?\nPutting a screen on this so that I can light it up myself",
+        "meets_latency_target": false,
+        "duration_ms": 3871.922
+      },
+      "start_time": "2025-03-16T18:39:46.942368",
+      "end_time": "2025-03-16T18:39:50.814290",
+      "duration_ms": 3871.922
+    },
+    {
+      "test_id": "voice_simple_6c2b050f",
+      "test_type": "voice_processing",
+      "success": false,
+      "metrics": {
+        "command": "Increase the volume",
+        "model_name": "rene",
+        "processing_location": "automatic",
+        "decision_metadata": {
+          "decision": "automatic",
+          "reason": "Forced by user setting",
+          "decision_time_ms": 0
+        },
+        "model_load_time_ms": 0.18596649169921875,
+        "generation_time_ms": 3957.223892211914,
+        "response_length": 1032,
+        "response": " of your blog articles for search engine optimization and increase your internet site visitors by choosing these tools to enhance your blog and also your job. Using these tools can aid you enhance your blog site for countless websites and also increase your blog site\u2019s reach. For more info regarding SEO tools, read this post to learn just how to make use of these tools. This article is based upon the feedback from a past post. If you\u2019re not acquainted with SEO, blog site tools can be an outstanding means to learn more about its benefits. One of the most effective SEO tools is WordCounter. WordCounter can increase the word matter of your web content. It additionally supplies an entertaining and also appropriate summary of a blog post. This short article is much more relevant to contemporary websites, and is very easy to use. The tool is additionally totally free, as well as can assist you enhance the appeal of your article. Look Engine is another SEO tool that is preferred amongst material writers. With this tool, you",
+        "meets_latency_target": false,
+        "duration_ms": 3957.5119999999997
+      },
+      "start_time": "2025-03-16T18:39:50.819895",
+      "end_time": "2025-03-16T18:39:54.777407",
+      "duration_ms": 3957.5119999999997
+    },
+    {
+      "test_id": "voice_simple_3434a6d0",
+      "test_type": "voice_processing",
+      "success": false,
+      "metrics": {
+        "command": "Stop the timer",
+        "model_name": "rene",
+        "processing_location": "automatic",
+        "decision_metadata": {
+          "decision": "automatic",
+          "reason": "Forced by user setting",
+          "decision_time_ms": 0
+        },
+        "model_load_time_ms": 0.1399517059326172,
+        "generation_time_ms": 3895.418882369995,
+        "response_length": 727,
+        "response": " on your kitchen clock. I hope you\u2019re going to make the right decision. I\u2019m going to quiz you on face painting. What\u2019s the question? How to Prepare for a Face Painting Party.\nIn it, if you find an image with a man and a woman on it. Okay. Okay, if it\u2019s a man and a woman, you\u2019re ready to go.\nCan you draw a line from the nose to the mouth to the nose to the mouth and straight down to the top of the nose? Okay.\nThat\u2019s the first step. Okay. And then next is just draw a straight line from top to bottom and then draw in the eyes. Okay.\nAnd then next, you\u2019re going to draw two eyes. Next you\u2019re going to draw the mouth and then draw in the mouth. Okay.\nYou\u2019ll draw the eyebrows first. Okay. And then draw in the eye. Next you\u2019ll",
+        "meets_latency_target": false,
+        "duration_ms": 3895.6659999999997
+      },
+      "start_time": "2025-03-16T18:39:54.777894",
+      "end_time": "2025-03-16T18:39:58.673560",
+      "duration_ms": 3895.6659999999997
+    },
+    {
+      "test_id": "voice_simple_0940f0b3",
+      "test_type": "voice_processing",
+      "success": false,
+      "metrics": {
+        "command": "What's on my calendar today?",
+        "model_name": "rene",
+        "processing_location": "automatic",
+        "decision_metadata": {
+          "decision": "automatic",
+          "reason": "Forced by user setting",
+          "decision_time_ms": 0
+        },
+        "model_load_time_ms": 0.1900196075439453,
+        "generation_time_ms": 3958.7221145629883,
+        "response_length": 787,
+        "response": "\nSpent the morning cleaning.\nCleaning is not my favorite thing to do. I don't like it much when I have to do it, and I loathe doing it.\nHere's one of my \"normal routine\" cleaning chores.\nI know that sounds like an exaggeration but you would be surprised how much can get in there.\nWhile I was cleaning I realized I hadn't cleaned my computer for a while. I'm a little behind on Facebook and my reading. Let's just say I love the Kindle.\nHere's how I clean my computer.\nThat's my \"normal routine\" cleaning. But, I didn't have time to clean while I was cleaning. So, I cleaned before I cleaned.\nToday, I have one appointment. Lunch with my grandson, Riley. \nHere's how I spend time with Riley...\nIt's a real treat to have my grandson and granddaughter here. Today, Riley is the first grand",
+        "meets_latency_target": false,
+        "duration_ms": 3958.956
+      },
+      "start_time": "2025-03-16T18:39:58.673999",
+      "end_time": "2025-03-16T18:40:02.632955",
+      "duration_ms": 3958.956
+    }
+  ]
+}

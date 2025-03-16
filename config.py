@@ -30,7 +30,7 @@ MODEL_COMPATIBILITY = {
 # Default generation parameters
 DEFAULT_GENERATION_PARAMS = {
     "max_tokens": 200,
-    "temperature": 0.85,
+    "temperature": 0.60,
     "top_p": 0.99
 }
 
