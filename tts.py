@@ -1,7 +1,8 @@
 """
-Text-to-Speech (TTS) integration for the Cartesia State Space Model (SSM) PoC
+Improved Text-to-Speech (TTS) implementation for the Cartesia SSM PoC
 
-This module handles interaction with the Cartesia TTS API.
+This file contains enhanced versions of the TTS functionality to ensure
+proper integration with the Cartesia API.
 """
 
 import os
@@ -52,8 +53,14 @@ class CartesiaTTS:
         try:
             from cartesia import Cartesia
             self.client = Cartesia(api_key=self.api_key)
-        except ImportError:
-            raise ImportError("The cartesia Python module is not installed. Install with: pip install cartesia")
+            # Test connection by listing voices
+            _ = self.client.voices.list()
+        except ImportError as e:
+            print(f"CartesiaTTS init error: {e}")
+            raise ImportError(f"The cartesia Python module is not installed or has missing dependencies: {str(e)}")
+        except Exception as e:
+            print(f"CartesiaTTS init error: {e}")
+            raise Exception(f"Failed to initialize Cartesia client: {str(e)}")
     
     def get_voices(self, force_refresh=False):
         """Get available voice options from the API"""
@@ -62,6 +69,7 @@ class CartesiaTTS:
         
         try:
             log_event("tts_get_voices_start")
+            print("TTS get_voices: Fetching voices from API")
             
             # Get voices from the Cartesia API
             voice_objects = self.client.voices.list()
@@ -79,10 +87,12 @@ class CartesiaTTS:
                 }
                 self.available_voices.append(voice_data)
             
+            print(f"TTS get_voices: Found {len(self.available_voices)} voices")
             log_event("tts_get_voices_complete", {"voice_count": len(self.available_voices)})
             return self.available_voices
             
         except Exception as e:
+            print(f"TTS get_voices error: {e}")
             log_event("tts_get_voices_error", {"error": str(e)})
             traceback.print_exc()
             raise
@@ -114,6 +124,7 @@ class CartesiaTTS:
                 "sample_rate": 44100,
             }
         
+        print(f"TTS generate_audio: Generating audio for text of length {len(text)}")
         log_event("tts_generate_start", {
             "text_length": len(text),
             "voice_id": voice_id,
@@ -129,6 +140,7 @@ class CartesiaTTS:
                 output_format=output_format,
             )
             
+            print(f"TTS generate_audio: Generated {len(data)} bytes of audio data")
             log_event("tts_generate_complete", {
                 "data_size_bytes": len(data),
                 "output_format": output_format
@@ -137,34 +149,99 @@ class CartesiaTTS:
             return data
             
         except Exception as e:
+            print(f"TTS generate_audio error: {e}")
             log_event("tts_generate_error", {"error": str(e)})
             traceback.print_exc()
             raise
 
-# Helper function to initialize TTS client
+# Improved helper function to initialize TTS client
 def get_tts_client():
     """Get an initialized TTS client"""
     try:
-        return CartesiaTTS()
-    except (ValueError, ImportError) as e:
+        print("Initializing TTS client...")
+        client = CartesiaTTS()
+        print("TTS client initialized successfully")
+        return client
+    except (ValueError, ImportError, Exception) as e:
+        print(f"TTS client init error: {e}")
         log_event("tts_client_init_error", {"error": str(e)})
         return None
 
-# Check if TTS is available
+# Improved TTS availability check
 def is_tts_available():
-    """Check if TTS functionality is available"""
+    """Check if TTS functionality is available with better error reporting"""
     try:
         # Check for API key
         api_key = os.environ.get("CARTESIA_API_KEY")
         if not api_key or api_key == "":
+            print("TTS check: API key not found")
             return False
             
-        # Check if we can import the cartesia module
+        print(f"TTS check: API key found (starts with: {api_key[:4] if len(api_key) > 4 else '****'}...)")
+        
+        # Check if we can import the cartesia module and its dependencies
         try:
+            print("TTS check: Importing cartesia module")
             from cartesia import Cartesia
+            
+            # Try to initialize client
+            print("TTS check: Creating client instance")
+            client = Cartesia(api_key=api_key)
+            
+            # Test with a simple API call
+            print("TTS check: Testing API connection")
+            voices = client.voices.list()
+            print(f"TTS check: API connection successful, found {len(voices)} voices")
+            
             return True
-        except ImportError:
+            
+        except ImportError as e:
+            print(f"TTS check: Import error: {e}")
+            
+            # Check for specific dependency issues
+            if "audioop" in str(e) or "pyaudioop" in str(e):
+                print("TTS check: Missing audioop/pyaudioop dependencies. Install them with pip install pyaudioop")
+            elif "pydub" in str(e):
+                print("TTS check: Missing pydub dependency. Install with pip install pydub")
+            elif "ffmpeg" in str(e):
+                print("TTS check: Missing ffmpeg. Install with brew install ffmpeg (macOS) or apt-get install ffmpeg (Linux)")
+                
             return False
+            
+        except Exception as e:
+            print(f"TTS check: Error creating client: {e}")
+            return False
+            
     except Exception as e:
-        print(f"Error checking TTS availability: {e}")
+        print(f"TTS check: Unexpected error: {e}")
         return False
+
+# Simple test function to verify TTS functionality
+def test_tts():
+    """Test TTS functionality and report results"""
+    print("Testing TTS functionality...")
+    
+    if not is_tts_available():
+        print("TTS is not available. Check the logs for details.")
+        return False
+    
+    try:
+        client = get_tts_client()
+        if not client:
+            print("Failed to initialize TTS client.")
+            return False
+        
+        voices = client.get_voices()
+        print(f"Found {len(voices)} voices.")
+        
+        if voices:
+            print(f"First voice: {voices[0]['name']} (ID: {voices[0]['voice_id']})")
+        
+        return True
+    except Exception as e:
+        print(f"TTS test error: {e}")
+        return False
+
+# Run test if executed directly
+if __name__ == "__main__":
+    test_tts()

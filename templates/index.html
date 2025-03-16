@@ -412,16 +412,22 @@
             <div class="section-header">Text-to-Speech</div>
             
             <div id="tts-status" class="form-group">
-                Checking TTS availability...
+                <p>Checking TTS availability...</p>
+                <div id="tts-status-details" class="model-status" style="margin-top: 5px;"></div>
             </div>
             
             <div id="tts-controls" style="display: none;">
                 <div class="form-group">
                     <label for="tts-voice">Select Voice:</label>
-                    <select id="tts-voice" style="min-width: 250px;">
-                        <option value="">Loading voices...</option>
-                    </select>
-                    <!-- Voice preview button will be added here dynamically -->
+                    <div style="display: flex; align-items: center;">
+                        <select id="tts-voice" style="min-width: 250px; flex-grow: 1;">
+                            <option value="">Loading voices...</option>
+                        </select>
+                        <button id="preview-voice-btn" style="margin-left: 10px; padding: 8px 12px;" title="Preview the selected voice with a sample phrase">
+                            Preview Voice
+                        </button>
+                    </div>
+                    <small id="voice-info" style="display: block; margin-top: 5px; color: #666;"></small>
                 </div>
                 
                 <div class="form-group">
@@ -430,23 +436,47 @@
                         <option value="sonic-2" selected>Sonic-2 (High Quality)</option>
                         <option value="sonic-1">Sonic-1 (Faster)</option>
                     </select>
+                    <small style="display: block; margin-top: 5px; color: #666;">Sonic-2 provides higher quality but may be slower. Sonic-1 is faster but with slightly lower quality.</small>
                 </div>
                 
                 <div class="form-group">
                     <label for="tts-text">Text to Synthesize:</label>
-                    <textarea id="tts-text" rows="5" style="width: 100%;" placeholder="Enter text to convert to speech">Hello, world! I'm generating audio on Cartesia.</textarea>
+                    <textarea id="tts-text" rows="5" style="width: 100%;" placeholder="Enter text to convert to speech">Hello, I'm Cartesia TTS. This is a demonstration of text-to-speech synthesis.</textarea>
                 </div>
                 
                 <div class="form-group">
-                    <button id="tts-generate-btn">Generate Audio</button>
+                    <button id="tts-generate-btn" style="padding: 10px 20px; font-weight: bold;">Generate Audio</button>
                     <span id="tts-loading" class="loading">Generating audio...</span>
                 </div>
                 
-                <div class="form-group" id="tts-audio-container" style="display: none;">
+                <div class="form-group" id="tts-audio-container" style="display: none; background: #f5f5f5; padding: 15px; border-radius: 8px; margin-top: 15px;">
                     <label>Generated Audio:</label>
-                    <audio id="tts-audio" controls style="width: 100%;"></audio>
-                    <a id="tts-download" href="#" download="tts_output.wav" class="button" style="display: block; margin-top: 10px; text-align: center; padding: 8px; background: #4285f4; color: white; text-decoration: none; border-radius: 4px;">Download Audio</a>
+                    <audio id="tts-audio" controls style="width: 100%; margin-top: 10px;"></audio>
+                    <a id="tts-download" href="#" download="cartesia_tts.wav" style="display: block; margin-top: 15px; text-align: center; padding: 10px; background: #4285f4; color: white; text-decoration: none; border-radius: 4px; font-weight: bold;">
+                        Download Audio
+                    </a>
                 </div>
+                
+                <div id="tts-error" class="error" style="margin-top: 15px; display: none;"></div>
+            </div>
+            
+            <div id="tts-troubleshooting" style="margin-top: 20px; display: none; background: #f9f9f9; padding: 15px; border-radius: 8px; border-left: 4px solid #4285f4;">
+                <h3 style="margin-top: 0;">Troubleshooting</h3>
+                <p>If you're having issues with Text-to-Speech functionality:</p>
+                <ol>
+                    <li>Check that the <code>CARTESIA_API_KEY</code> environment variable is set correctly</li>
+                    <li>Make sure the <code>cartesia</code> Python package is installed: <code>pip install cartesia</code></li>
+                    <li>Install required dependencies:
+                        <ul>
+                            <li><code>pip install pyaudioop pydub</code></li>
+                            <li>Install FFmpeg: <code>brew install ffmpeg</code> (macOS) or <code>apt-get install ffmpeg</code> (Linux)</li>
+                        </ul>
+                    </li>
+                    <li>Restart the server after making these changes</li>
+                    <li>Check server logs for specific error messages</li>
+                </ol>
+                <button id="test-tts-btn" style="margin-top: 10px; padding: 8px 15px;">Run TTS Test</button>
+                <div id="tts-test-result" style="margin-top: 10px; display: none;"></div>
             </div>
         </div>
     </div>
@@ -736,7 +766,382 @@ Test Details:
     </script>
 
 <script>
-// TTS functionality
+// Enhanced TTS functionality
+document.addEventListener('DOMContentLoaded', () => {
+    // Check if TTS is available when the TTS tab is activated
+    document.querySelector('.tab[data-tab="tts"]').addEventListener('click', checkTTSAvailability);
+    
+    // Also check on initial load if TTS tab is active
+    if (document.querySelector('.tab[data-tab="tts"]').classList.contains('active')) {
+        checkTTSAvailability();
+    }
+    
+    function showError(message) {
+        const errorEl = document.getElementById('tts-error');
+        errorEl.textContent = message;
+        errorEl.style.display = 'block';
+    }
+    
+    function hideError() {
+        const errorEl = document.getElementById('tts-error');
+        errorEl.style.display = 'none';
+    }
+    
+    function checkTTSAvailability() {
+        console.log("Checking TTS availability...");
+        const ttsStatusEl = document.getElementById('tts-status');
+        const ttsStatusDetailsEl = document.getElementById('tts-status-details');
+        const ttsTroubleshootingEl = document.getElementById('tts-troubleshooting');
+        
+        ttsStatusEl.innerHTML = '<p>Checking TTS availability...</p>';
+        ttsStatusDetailsEl.textContent = '';
+        
+        fetch('/tts/available')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log("TTS availability response:", data);
+                
+                if (data.available) {
+                    ttsStatusEl.innerHTML = '<p style="color: green; font-weight: bold;">✓ Text-to-Speech is available</p>';
+                    ttsStatusDetailsEl.textContent = data.message || 'Ready to generate speech';
+                    document.getElementById('tts-controls').style.display = 'block';
+                    ttsTroubleshootingEl.style.display = 'none';
+                    
+                    // Load available voices
+                    loadTTSVoices();
+                } else {
+                    ttsStatusEl.innerHTML = '<p style="color: red; font-weight: bold;">✗ Text-to-Speech is not available</p>';
+                    ttsStatusDetailsEl.textContent = data.error || 'Set the CARTESIA_API_KEY environment variable.';
+                    document.getElementById('tts-controls').style.display = 'none';
+                    ttsTroubleshootingEl.style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error("Error checking TTS availability:", error);
+                ttsStatusEl.innerHTML = '<p style="color: red; font-weight: bold;">✗ Error checking TTS availability</p>';
+                ttsStatusDetailsEl.textContent = error.message;
+                document.getElementById('tts-controls').style.display = 'none';
+                ttsTroubleshootingEl.style.display = 'block';
+            });
+    }
+    
+    // Run TTS test
+    document.getElementById('test-tts-btn')?.addEventListener('click', function() {
+        const testResultEl = document.getElementById('tts-test-result');
+        testResultEl.textContent = 'Running TTS test...';
+        testResultEl.style.display = 'block';
+        testResultEl.style.backgroundColor = '#f0f0f0';
+        testResultEl.style.padding = '10px';
+        testResultEl.style.borderRadius = '4px';
+        
+        fetch('/tts/test')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    testResultEl.style.backgroundColor = '#e6ffe6';
+                    testResultEl.textContent = '✓ ' + data.message;
+                } else {
+                    testResultEl.style.backgroundColor = '#ffebeb';
+                    testResultEl.textContent = '✗ ' + (data.error || 'Test failed');
+                }
+                
+                // Refresh TTS status after test
+                setTimeout(checkTTSAvailability, 1000);
+            })
+            .catch(error => {
+                testResultEl.style.backgroundColor = '#ffebeb';
+                testResultEl.textContent = '✗ Error running test: ' + error.message;
+            });
+    });
+    
+    // Load TTS voices with improved error handling
+    function loadTTSVoices() {
+        const voiceSelectEl = document.getElementById('tts-voice');
+        const voiceInfoEl = document.getElementById('voice-info');
+        
+        voiceSelectEl.innerHTML = '<option value="">Loading voices...</option>';
+        voiceInfoEl.textContent = 'Fetching available voices...';
+        
+        fetch('/tts/voices')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log("TTS voices response:", data);
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                if (data.voices && data.voices.length > 0) {
+                    // Clear placeholder
+                    voiceSelectEl.innerHTML = '';
+                    voiceInfoEl.textContent = `${data.count} voices available`;
+                    
+                    // Group voices by language
+                    const voicesByLanguage = {};
+                    data.voices.forEach(voice => {
+                        const lang = voice.language || 'unknown';
+                        if (!voicesByLanguage[lang]) {
+                            voicesByLanguage[lang] = [];
+                        }
+                        voicesByLanguage[lang].push(voice);
+                    });
+                    
+                    // Language display names
+                    const languageNames = {
+                        'en': 'English',
+                        'es': 'Spanish',
+                        'fr': 'French',
+                        'de': 'German',
+                        'it': 'Italian',
+                        'pt': 'Portuguese',
+                        'ja': 'Japanese',
+                        'ko': 'Korean',
+                        'zh': 'Chinese',
+                        'ar': 'Arabic',
+                        'hi': 'Hindi',
+                        'ru': 'Russian'
+                    };
+                    
+                    // Create option groups for each language
+                    Object.keys(voicesByLanguage).sort().forEach(language => {
+                        const langGroup = document.createElement('optgroup');
+                        langGroup.label = languageNames[language] || language.toUpperCase();
+                        
+                        // Add voice options for this language, sorted by name
+                        voicesByLanguage[language]
+                            .sort((a, b) => a.name.localeCompare(b.name))
+                            .forEach(voice => {
+                                const option = document.createElement('option');
+                                option.value = voice.voice_id;
+                                
+                                // Create display name with gender if available
+                                let displayName = voice.name;
+                                if (voice.gender) {
+                                    displayName += ` (${voice.gender})`;
+                                }
+                                option.textContent = displayName;
+                                
+                                // Add description as a title attribute if available
+                                if (voice.description) {
+                                    option.title = voice.description;
+                                }
+                                
+                                langGroup.appendChild(option);
+                            });
+                        
+                        voiceSelectEl.appendChild(langGroup);
+                    });
+                    
+                    // Add voice info display
+                    voiceSelectEl.addEventListener('change', function() {
+                        const selectedVoiceId = this.value;
+                        const selectedVoice = data.voices.find(v => v.voice_id === selectedVoiceId);
+                        
+                        if (selectedVoice) {
+                            let infoText = `${selectedVoice.name}`;
+                            if (selectedVoice.gender) {
+                                infoText += ` • ${selectedVoice.gender}`;
+                            }
+                            if (selectedVoice.language) {
+                                infoText += ` • ${languageNames[selectedVoice.language] || selectedVoice.language}`;
+                            }
+                            if (selectedVoice.description) {
+                                infoText += ` • ${selectedVoice.description}`;
+                            }
+                            voiceInfoEl.textContent = infoText;
+                        } else {
+                            voiceInfoEl.textContent = '';
+                        }
+                    });
+                    
+                    // Trigger change event for initially selected voice
+                    voiceSelectEl.dispatchEvent(new Event('change'));
+                    
+                    // Add voice preview feature
+                    setupVoicePreview(data.voices);
+                    
+                } else {
+                    voiceSelectEl.innerHTML = '<option value="">No voices available</option>';
+                    voiceInfoEl.textContent = 'No voices found';
+                }
+            })
+            .catch(error => {
+                console.error("Error loading voices:", error);
+                voiceSelectEl.innerHTML = `<option value="">Error loading voices</option>`;
+                voiceInfoEl.textContent = `Error: ${error.message}`;
+                showError(`Failed to load voices: ${error.message}`);
+            });
+    }
+    
+    // Set up voice preview functionality
+    function setupVoicePreview(voices) {
+        const previewBtn = document.getElementById('preview-voice-btn');
+        const voiceSelectEl = document.getElementById('tts-voice');
+        
+        // Create audio element for previews if not exists
+        let previewAudio = document.getElementById('voice-preview-audio');
+        if (!previewAudio) {
+            previewAudio = document.createElement('audio');
+            previewAudio.id = 'voice-preview-audio';
+            previewAudio.style.display = 'none';
+            document.body.appendChild(previewAudio);
+        }
+        
+        // Add click event
+        previewBtn.addEventListener('click', () => {
+            hideError();
+            const selectedVoiceId = voiceSelectEl.value;
+            const selectedVoice = voices.find(v => v.voice_id === selectedVoiceId);
+            
+            if (!selectedVoiceId) {
+                showError('Please select a voice to preview');
+                return;
+            }
+            
+            if (selectedVoice && selectedVoice.preview_url) {
+                // Use existing preview URL if available
+                previewAudio.src = selectedVoice.preview_url;
+                previewAudio.play();
+            } else {
+                // Generate a quick sample
+                const sampleText = "This is a voice sample from Cartesia.";
+                generateVoiceSample(selectedVoiceId, sampleText);
+            }
+        });
+    }
+    
+    // Generate a voice sample on demand
+    function generateVoiceSample(voiceId, text) {
+        const loadingEl = document.getElementById('tts-loading');
+        loadingEl.classList.add('active');
+        hideError();
+        
+        const modelId = document.getElementById('tts-model').value;
+        
+        fetch('/tts/generate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                text: text,
+                voice_id: voiceId,
+                model_id: modelId
+            }),
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.error || `Server error: ${response.status}`);
+                });
+            }
+            return response.blob();
+        })
+        .then(blob => {
+            const audioUrl = URL.createObjectURL(blob);
+            const previewAudio = document.getElementById('voice-preview-audio');
+            previewAudio.src = audioUrl;
+            previewAudio.play();
+        })
+        .catch(error => {
+            console.error('Error generating voice sample:', error);
+            showError(`Could not preview voice: ${error.message}`);
+        })
+        .finally(() => {
+            loadingEl.classList.remove('active');
+        });
+    }
+    
+    // Generate TTS audio button click handler
+    document.getElementById('tts-generate-btn')?.addEventListener('click', () => {
+        const text = document.getElementById('tts-text').value.trim();
+        const voiceId = document.getElementById('tts-voice').value;
+        const modelId = document.getElementById('tts-model').value;
+        const loadingEl = document.getElementById('tts-loading');
+        const audioContainer = document.getElementById('tts-audio-container');
+        const audioEl = document.getElementById('tts-audio');
+        const downloadLink = document.getElementById('tts-download');
+        const generateBtn = document.getElementById('tts-generate-btn');
+        
+        hideError();
+        
+        if (!text) {
+            showError('Please enter text to synthesize');
+            return;
+        }
+        
+        if (!voiceId) {
+            showError('Please select a voice');
+            return;
+        }
+        
+        // Show loading indicator
+        loadingEl.classList.add('active');
+        generateBtn.disabled = true;
+        audioContainer.style.display = 'none';
+        
+        // Generate audio
+        fetch('/tts/generate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                text: text,
+                voice_id: voiceId,
+                model_id: modelId
+            }),
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.error || `Server error: ${response.status}`);
+                });
+            }
+            return response.blob();
+        })
+        .then(blob => {
+            // Create a URL for the audio blob
+            const audioUrl = URL.createObjectURL(blob);
+            
+            // Set the audio source
+            audioEl.src = audioUrl;
+            
+            // Set download link
+            downloadLink.href = audioUrl;
+            
+            // Get current timestamp for the filename
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            downloadLink.download = `cartesia_tts_${timestamp}.wav`;
+            
+            // Show audio player
+            audioContainer.style.display = 'block';
+            
+            // Play the audio
+            audioEl.play();
+        })
+        .catch(error => {
+            console.error('Error generating audio:', error);
+            showError(`Error generating audio: ${error.message}`);
+        })
+        .finally(() => {
+            loadingEl.classList.remove('active');
+            generateBtn.disabled = false;
+        });
+    });
+});
+</script>
+<!-- // TTS functionality
 document.addEventListener('DOMContentLoaded', () => {
     // Check if TTS is available when the TTS tab is activated
     document.querySelector('.tab[data-tab="tts"]').addEventListener('click', checkTTSAvailability);
@@ -998,7 +1403,7 @@ document.addEventListener('DOMContentLoaded', () => {
             generateBtn.disabled = false;
         });
     });
-});
+}); -->
 </script>
 </body>
 </html>
