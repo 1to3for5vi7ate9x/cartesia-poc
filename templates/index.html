@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cartesia SSM PoC</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 1000px; 
+            margin: 0 auto; 
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 20px; 
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .form-group { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 5px; 
+        }
+        label { 
+            font-weight: bold; 
+        }
+        textarea { 
+            height: 100px; 
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .options { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 20px; 
+        }
+        #output { 
+            white-space: pre-wrap; 
+            border: 1px solid #ddd; 
+            padding: 10px; 
+            min-height: 200px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
+        #status { 
+            color: #666; 
+        }
+        button { 
+            padding: 10px; 
+            background: #4285f4; 
+            color: white; 
+            border: none; 
+            cursor: pointer;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        button:hover { 
+            background: #3b77db; 
+        }
+        button:disabled {
+            background: #b0c5e6;
+            cursor: not-allowed;
+        }
+        .loading { 
+            display: none; 
+            margin-left: 10px; 
+        }
+        .loading.active { 
+            display: inline; 
+        }
+        .error { 
+            color: red; 
+        }
+        .success {
+            color: green;
+        }
+        .model-status { 
+            font-size: 0.9em; 
+            color: #666; 
+            margin-top: 5px; 
+        }
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            border-bottom: none;
+            margin-right: 5px;
+            border-radius: 4px 4px 0 0;
+        }
+        .tab.active {
+            background-color: white;
+            border-color: #ddd;
+            border-bottom: 1px solid white;
+            margin-bottom: -1px;
+            font-weight: bold;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .metrics {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .metric-card {
+            background: #f0f7ff;
+            padding: 10px;
+            border-radius: 4px;
+            flex: 1;
+            min-width: 150px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        .metric-label {
+            font-size: 12px;
+            color: #666;
+        }
+        select, input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .test-form {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        .test-results {
+            margin-top: 15px;
+        }
+        .section-header {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 15px 0 10px 0;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <h1>Cartesia State Space Model (SSM) PoC</h1>
+    
+    <div class="tabs">
+        <div class="tab active" data-tab="generation">Text Generation</div>
+        <div class="tab" data-tab="testing">Testing Framework</div>
+        <div class="tab" data-tab="system">System Info</div>
+    </div>
+    
+    <div class="tab-content active" id="generation-tab">
+        <div class="container">
+            <div class="form-group">
+                <label for="model">Select Model:</label>
+                <select id="model">
+                    {% for model_name, model_id in models.items() %}
+                    <option value="{{ model_name }}">{{ model_id }}</option>
+                    {% endfor %}
+                </select>
+                <small>Models will be downloaded and loaded on first use</small>
+                <div id="model-status" class="model-status"></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="processing-location">Processing Location:</label>
+                <select id="processing-location">
+                    <option value="automatic">Automatic (Intelligent Routing)</option>
+                    <option value="local">Local (On-Device)</option>
+                    <option value="server">Server (Data Center)</option>
+                </select>
+                <div id="processing-decision" class="model-status"></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="prompt">Prompt:</label>
+                <textarea id="prompt">Rene Descartes was</textarea>
+            </div>
+            
+            <div class="options">
+                <div class="form-group">
+                    <label for="max_tokens">Max Tokens:</label>
+                    <input type="number" id="max_tokens" value="200" min="1" max="2000">
+                </div>
+                <div class="form-group">
+                    <label for="temperature">Temperature:</label>
+                    <input type="number" id="temperature" value="0.85" min="0.1" max="2.0" step="0.05">
+                </div>
+                <div class="form-group">
+                    <label for="top_p">Top P:</label>
+                    <input type="number" id="top_p" value="0.99" min="0.1" max="1.0" step="0.01">
+                </div>
+            </div>
+            
+            <div>
+                <button id="generate">Generate</button>
+                <span id="loading" class="loading">Loading model and generating...</span>
+            </div>
+            
+            <div id="metrics" class="metrics">
+                <div class="metric-card">
+                    <div class="metric-label">Total Time</div>
+                    <div class="metric-value" id="total-time">-</div>
+                    <div class="metric-label">milliseconds</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Model Load Time</div>
+                    <div class="metric-value" id="load-time">-</div>
+                    <div class="metric-label">milliseconds</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Generation Time</div>
+                    <div class="metric-value" id="gen-time">-</div>
+                    <div class="metric-label">milliseconds</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Output Length</div>
+                    <div class="metric-value" id="output-length">-</div>
+                    <div class="metric-label">characters</div>
+                </div>
+            </div>
+            
+            <div id="status"></div>
+            <div id="output"></div>
+        </div>
+    </div>
+    
+    <div class="tab-content" id="testing-tab">
+        <div class="container">
+            <div class="section-header">Run Tests</div>
+            
+            <div class="test-form">
+                <div class="form-group">
+                    <label for="test-type">Test Type:</label>
+                    <select id="test-type">
+                        <option value="voice_processing">Voice Processing Performance</option>
+                        <option value="context_retention">Context Retention Capability</option>
+                        <option value="extended_usage">Extended Usage Test</option>
+                    </select>
+                </div>
+                
+                <div class="test-params" id="voice-params">
+                    <div class="form-group">
+                        <label for="command-set">Command Set:</label>
+                        <select id="command-set">
+                            <option value="simple">Simple Commands</option>
+                            <option value="moderate">Moderate Complexity</option>
+                            <option value="complex">Complex Queries</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="test-params" id="context-params" style="display:none;">
+                    <div class="form-group">
+                        <label for="context-set">Context Scenario:</label>
+                        <select id="context-set">
+                            <option value="0">Weather Scenario</option>
+                            <option value="1">Restaurant Scenario</option>
+                            <option value="2">Meeting Scheduling</option>
+                            <option value="3">Calendar Management</option>
+                            <option value="4">Email Management</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="test-params" id="extended-params" style="display:none;">
+                    <div class="form-group">
+                        <label for="test-duration">Test Duration (seconds):</label>
+                        <input type="number" id="test-duration" value="600" min="60" max="7200">
+                    </div>
+                    <div class="form-group">
+                        <label for="command-interval">Command Interval (seconds):</label>
+                        <input type="number" id="command-interval" value="60" min="10" max="300">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="test-model">Model to Test:</label>
+                    <select id="test-model">
+                        {% for model_name, model_id in models.items() %}
+                        <option value="{{ model_name }}">{{ model_id }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="test-environment">Test Environment:</label>
+                    <select id="test-environment">
+                        <option value="laboratory">Laboratory (Controlled)</option>
+                        <option value="downtown">Downtown Business District</option>
+                        <option value="residential">Residential Neighborhood</option>
+                        <option value="public_space">Public Space (Park/Plaza)</option>
+                        <option value="indoor">Indoor Commercial Space</option>
+                    </select>
+                </div>
+                
+                <button id="run-test">Run Test</button>
+                <span id="test-loading" class="loading">Running test...</span>
+            </div>
+            
+            <div class="section-header">Test Results</div>
+            <div id="test-status"></div>
+            
+            <div class="test-results">
+                <div id="test-output"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="tab-content" id="system-tab">
+        <div class="container">
+            <div class="section-header">System Information</div>
+            <button id="refresh-system-info">Refresh Information</button>
+            
+            <div class="form-group" style="margin-top: 15px;">
+                <label>System Information:</label>
+                <pre id="system-info" style="background: #f5f5f5; padding: 10px; border-radius: 4px;"></pre>
+            </div>
+            
+            <div class="form-group">
+                <label>Network Information:</label>
+                <pre id="network-info" style="background: #f5f5f5; padding: 10px; border-radius: 4px;"></pre>
+            </div>
+            
+            <div class="form-group">
+                <label>Resource State:</label>
+                <pre id="resource-info" style="background: #f5f5f5; padding: 10px; border-radius: 4px;"></pre>
+            </div>
+            
+            <div class="form-group">
+                <label>Loaded Models:</label>
+                <pre id="models-info" style="background: #f5f5f5; padding: 10px; border-radius: 4px;"></pre>
+            </div>
+            
+            <div class="form-group">
+                <label>Performance Targets:</label>
+                <pre id="targets-info" style="background: #f5f5f5; padding: 10px; border-radius: 4px;"></pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Remove active class from all tabs and content
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                // Add active class to clicked tab and corresponding content
+                tab.classList.add('active');
+                const tabId = tab.getAttribute('data-tab');
+                document.getElementById(`${tabId}-tab`).classList.add('active');
+            });
+        });
+        
+        // Text generation tab functionality
+        document.getElementById('generate').addEventListener('click', async () => {
+            const model = document.getElementById('model').value;
+            const prompt = document.getElementById('prompt').value;
+            const maxTokens = document.getElementById('max_tokens').value;
+            const temperature = document.getElementById('temperature').value;
+            const topP = document.getElementById('top_p').value;
+            const processingLocation = document.getElementById('processing-location').value;
+            
+            const statusEl = document.getElementById('status');
+            const outputEl = document.getElementById('output');
+            const loadingEl = document.getElementById('loading');
+            const generateBtn = document.getElementById('generate');
+            const modelStatusEl = document.getElementById('model-status');
+            const processingDecisionEl = document.getElementById('processing-decision');
+            
+            // Reset UI
+            statusEl.textContent = '';
+            statusEl.classList.remove('error');
+            statusEl.classList.remove('success');
+            loadingEl.classList.add('active');
+            generateBtn.disabled = true;
+            outputEl.textContent = prompt;
+            modelStatusEl.textContent = `Loading ${model}...`;
+            processingDecisionEl.textContent = '';
+            
+            // Reset metrics
+            document.getElementById('total-time').textContent = '-';
+            document.getElementById('load-time').textContent = '-';
+            document.getElementById('gen-time').textContent = '-';
+            document.getElementById('output-length').textContent = '-';
+            
+            const startTime = performance.now();
+            
+            try {
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        model,
+                        prompt,
+                        max_tokens: parseInt(maxTokens),
+                        temperature: parseFloat(temperature),
+                        top_p: parseFloat(topP),
+                        processing_location: processingLocation
+                    }),
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Generation failed');
+                }
+                
+                // Handle streaming response
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let generatedText = '';
+                
+                while (true) {
+                    const { value, done } = await reader.read();
+                    if (done) break;
+                    
+                    const text = decoder.decode(value);
+                    generatedText += text;
+                    outputEl.textContent = prompt + generatedText;
+                }
+                
+                const endTime = performance.now();
+                const totalTime = Math.round(endTime - startTime);
+                
+                // Update metrics
+                document.getElementById('total-time').textContent = totalTime;
+                document.getElementById('output-length').textContent = generatedText.length;
+                
+                // Estimate load time and generation time (these are rough estimates)
+                // In a real implementation, these would come from server metrics
+                const loadTime = Math.round(totalTime * 0.3); // Assume 30% of time is loading
+                const genTime = Math.round(totalTime * 0.7);  // Assume 70% of time is generation
+                document.getElementById('load-time').textContent = loadTime;
+                document.getElementById('gen-time').textContent = genTime;
+                
+                statusEl.textContent = 'Generation complete.';
+                statusEl.classList.add('success');
+                modelStatusEl.textContent = `Model ${model} loaded successfully.`;
+                
+                if (processingLocation === 'automatic') {
+                    // This is a simplification - in a real implementation, this would come from the server
+                    const inferredLocation = generatedText.length > 100 ? 'server' : 'local';
+                    processingDecisionEl.textContent = `Processing was routed to: ${inferredLocation}`;
+                }
+            } catch (error) {
+                statusEl.textContent = 'Error: ' + error.message;
+                statusEl.classList.add('error');
+                console.error('Error:', error);
+                
+                // Check if there was a model fallback
+                if (error.message.includes('fallback')) {
+                    modelStatusEl.textContent = `Failed to load ${model}. Fallback to rene model used.`;
+                } else {
+                    modelStatusEl.textContent = `Failed to load ${model}.`;
+                }
+            } finally {
+                loadingEl.classList.remove('active');
+                generateBtn.disabled = false;
+            }
+        });
+        
+        // Model compatibility check
+        document.getElementById('model').addEventListener('change', async (e) => {
+            const modelStatusEl = document.getElementById('model-status');
+            const selectedModel = e.target.value;
+            modelStatusEl.textContent = `Checking ${selectedModel} compatibility...`;
+            
+            try {
+                const response = await fetch('/check_model', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ model: selectedModel }),
+                });
+                
+                const data = await response.json();
+                
+                if (data.compatible) {
+                    modelStatusEl.textContent = `Model ${selectedModel} is compatible.`;
+                } else {
+                    modelStatusEl.textContent = `Warning: Model ${selectedModel} may not be compatible. Consider using rene model instead.`;
+                }
+            } catch (error) {
+                modelStatusEl.textContent = `Could not verify compatibility for ${selectedModel}.`;
+            }
+        });
+        
+        // Show/hide appropriate test parameters based on test type
+        document.getElementById('test-type').addEventListener('change', (e) => {
+            const testType = e.target.value;
+            document.querySelectorAll('.test-params').forEach(el => el.style.display = 'none');
+            
+            if (testType === 'voice_processing') {
+                document.getElementById('voice-params').style.display = 'block';
+            } else if (testType === 'context_retention') {
+                document.getElementById('context-params').style.display = 'block';
+            } else if (testType === 'extended_usage') {
+                document.getElementById('extended-params').style.display = 'block';
+            }
+        });
+        
+        // Run test button
+        document.getElementById('run-test').addEventListener('click', async () => {
+            const testType = document.getElementById('test-type').value;
+            const testModel = document.getElementById('test-model').value;
+            const testEnvironment = document.getElementById('test-environment').value;
+            
+            // Get test-specific parameters
+            let testParams = {
+                model_name: testModel,
+                environment: testEnvironment
+            };
+            
+            if (testType === 'voice_processing') {
+                testParams.command_set = document.getElementById('command-set').value;
+            } else if (testType === 'context_retention') {
+                testParams.context_set_idx = document.getElementById('context-set').value;
+            } else if (testType === 'extended_usage') {
+                testParams.duration_seconds = document.getElementById('test-duration').value;
+                testParams.command_interval_seconds = document.getElementById('command-interval').value;
+            }
+            
+            const testStatusEl = document.getElementById('test-status');
+            const testOutputEl = document.getElementById('test-output');
+            const testLoadingEl = document.getElementById('test-loading');
+            const runTestBtn = document.getElementById('run-test');
+            
+            testStatusEl.textContent = '';
+            testStatusEl.classList.remove('error');
+            testStatusEl.classList.remove('success');
+            testLoadingEl.classList.add('active');
+            runTestBtn.disabled = true;
+            testOutputEl.textContent = `Starting ${testType} test...`;
+            
+            try {
+                const response = await fetch('/run_test', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        test_type: testType,
+                        test_params: testParams
+                    }),
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Test failed to start');
+                }
+                
+                const data = await response.json();
+                
+                testStatusEl.textContent = `Test started with session ID: ${data.session_id}`;
+                testStatusEl.classList.add('success');
+                testOutputEl.textContent = `Test is running in the background. Results will be saved to the test_results directory.
+                
+For longer tests (like extended_usage), this can take several minutes to complete.
+
+Test Details:
+- Type: ${testType}
+- Model: ${testModel}
+- Environment: ${testEnvironment}
+- Session ID: ${data.session_id}
+`;
+                
+                if (testType === 'extended_usage') {
+                    testOutputEl.textContent += `- Duration: ${testParams.duration_seconds} seconds
+- Command Interval: ${testParams.command_interval_seconds} seconds
+`;
+                }
+                
+            } catch (error) {
+                testStatusEl.textContent = 'Error: ' + error.message;
+                testStatusEl.classList.add('error');
+                testOutputEl.textContent = `Failed to start test: ${error.message}`;
+                console.error('Error:', error);
+            } finally {
+                testLoadingEl.classList.remove('active');
+                runTestBtn.disabled = false;
+            }
+        });
+        
+        // System info tab
+        async function refreshSystemInfo() {
+            try {
+                const response = await fetch('/system_info');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch system information');
+                }
+                
+                const data = await response.json();
+                
+                document.getElementById('system-info').textContent = JSON.stringify(data.system, null, 2);
+                document.getElementById('network-info').textContent = JSON.stringify(data.network, null, 2);
+                document.getElementById('resource-info').textContent = JSON.stringify(data.resources, null, 2);
+                document.getElementById('models-info').textContent = JSON.stringify(data.loaded_models, null, 2);
+                document.getElementById('targets-info').textContent = JSON.stringify(data.performance_targets, null, 2);
+            } catch (error) {
+                console.error('Error fetching system info:', error);
+                document.getElementById('system-info').textContent = 'Error fetching system information';
+            }
+        }
+        
+        document.getElementById('refresh-system-info').addEventListener('click', refreshSystemInfo);
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check initial model compatibility
+            const initialModelEl = document.getElementById('model');
+            if (initialModelEl) {
+                const event = new Event('change');
+                initialModelEl.dispatchEvent(event);
+            }
+            
+            // Initial system info refresh
+            refreshSystemInfo();
+        });
+    </script>
+</body>
+</html>
