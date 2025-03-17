@@ -77,15 +77,30 @@ class CartesiaTTS:
             # Convert to a consistent format
             self.available_voices = []
             for voice in voice_objects:
-                voice_data = {
-                    "voice_id": voice.id,
-                    "name": voice.name,
-                    "language": getattr(voice, 'language', 'en'),
-                    "gender": getattr(voice, 'gender', None),
-                    "preview_url": getattr(voice, 'preview_url', None),
-                    "description": getattr(voice, 'description', None)
-                }
-                self.available_voices.append(voice_data)
+                # Check if voice is a dictionary or an object
+                if isinstance(voice, dict):
+                    voice_data = {
+                        "voice_id": voice.get("id"),
+                        "name": voice.get("name"),
+                        "language": voice.get("language", "en"),
+                        "gender": voice.get("gender"),
+                        "preview_url": voice.get("preview_url"),
+                        "description": voice.get("description")
+                    }
+                else:
+                    # Original object-based approach
+                    voice_data = {
+                        "voice_id": getattr(voice, "id", None),
+                        "name": getattr(voice, "name", None),
+                        "language": getattr(voice, "language", "en"),
+                        "gender": getattr(voice, "gender", None),
+                        "preview_url": getattr(voice, "preview_url", None),
+                        "description": getattr(voice, "description", None)
+                    }
+                
+                # Only add voices with valid IDs
+                if voice_data["voice_id"]:
+                    self.available_voices.append(voice_data)
             
             print(f"TTS get_voices: Found {len(self.available_voices)} voices")
             log_event("tts_get_voices_complete", {"voice_count": len(self.available_voices)})
