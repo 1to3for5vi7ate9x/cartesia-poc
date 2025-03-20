@@ -14,7 +14,7 @@ HF_TOKEN = os.environ.get("HF_TOKEN", "")
 # List of available models
 AVAILABLE_MODELS = {
     "rene": "cartesia-ai/Rene-v0.1-1.3b-4bit-mlx",
-    "llamba-1b": "cartesia-ai/Llamba-1B",
+    # "llamba-1b": "cartesia-ai/Llamba-1B", # Commented out due to compatibility issues
     "llamba-3b": "cartesia-ai/Llamba-3B-4bit-mlx",
     "llamba-8b": "cartesia-ai/Llamba-8B"
 }
