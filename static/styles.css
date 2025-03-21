@@ -1,0 +1,202 @@
+body { 
+    font-family: Arial, sans-serif; 
+    max-width: 1000px; 
+    margin: 0 auto; 
+    padding: 20px;
+    background-color: #f5f5f5;
+}
+.container { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 20px; 
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+.form-group { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 5px; 
+}
+label { 
+    font-weight: bold; 
+}
+textarea { 
+    height: 100px; 
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+.options { 
+    display: flex; 
+    flex-wrap: wrap; 
+    gap: 20px; 
+}
+#output { 
+    white-space: pre-wrap; 
+    border: 1px solid #ddd; 
+    padding: 10px; 
+    min-height: 200px;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+}
+#status { 
+    color: #666; 
+}
+button { 
+    padding: 10px; 
+    background: #4285f4; 
+    color: white; 
+    border: none; 
+    cursor: pointer;
+    border-radius: 4px;
+    font-weight: bold;
+}
+button:hover { 
+    background: #3b77db; 
+}
+button:disabled {
+    background: #b0c5e6;
+    cursor: not-allowed;
+}
+.loading { 
+    display: none; 
+    margin-left: 10px; 
+}
+.loading.active { 
+    display: inline; 
+}
+.error { 
+    color: red; 
+}
+.success {
+    color: green;
+}
+.model-status { 
+    font-size: 0.9em; 
+    color: #666; 
+    margin-top: 5px; 
+}
+.tabs {
+    display: flex;
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 20px;
+}
+.tab {
+    padding: 10px 20px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    border-bottom: none;
+    margin-right: 5px;
+    border-radius: 4px 4px 0 0;
+}
+.tab.active {
+    background-color: white;
+    border-color: #ddd;
+    border-bottom: 1px solid white;
+    margin-bottom: -1px;
+    font-weight: bold;
+}
+.tab-content {
+    display: none;
+}
+.tab-content.active {
+    display: block;
+}
+.metrics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+.metric-card {
+    background: #f0f7ff;
+    padding: 10px;
+    border-radius: 4px;
+    flex: 1;
+    min-width: 150px;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+.metric-value {
+    font-size: 24px;
+    font-weight: bold;
+    margin: 5px 0;
+}
+.metric-label {
+    font-size: 12px;
+    color: #666;
+}
+select, input {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+.test-form {
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+}
+.test-results {
+    margin-top: 15px;
+}
+.section-header {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 15px 0 10px 0;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Additional styles for the TTS tab */
+#tts-voice {
+    max-width: 100%;
+}
+
+#preview-voice-btn {
+    margin-left: 10px;
+    padding: 5px 10px;
+    background: #4285f4;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#preview-voice-btn:hover {
+    background: #3b77db;
+}
+
+#tts-model {
+    max-width: 100%;
+}
+
+#tts-audio {
+    width: 100%;
+    margin-top: 5px;
+}
+
+#tts-text {
+    font-family: Arial, sans-serif;
+    padding: 10px;
+    width: 100%;
+    min-height: 120px;
+}
+
+#tts-download {
+    display: block;
+    margin-top: 10px;
+    text-align: center;
+    padding: 8px;
+    background: #4285f4;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+#tts-download:hover {
+    background: #3b77db;
+}
