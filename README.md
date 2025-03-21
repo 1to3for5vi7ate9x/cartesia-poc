@@ -16,6 +16,7 @@ The PoC demonstrates how Cartesia's SSM technology operates across a distributed
 - **Model Management**: Loading and running various Cartesia models
 - **Hybrid Router**: Intelligent decision-making for optimal processing location
 - **Test Framework**: Comprehensive testing suite for real-world performance evaluation
+- **Text-to-Speech**: Integration with Cartesia's TTS API for voice output
 
 ## Project Structure
 
@@ -28,10 +29,15 @@ cartesia-poc/
 ├── test_framework.py    # Testing framework for real-world tests 
 ├── utils.py             # Shared utility functions
 ├── main.py              # Main entry point CLI
+├── tts.py               # Text-to-Speech integration with Cartesia API
 ├── requirements.txt     # Project dependencies
 ├── .env                 # Environment variables (create from .env.example)
-└── templates/           # HTML templates for the web interface
-    └── index.html       # Main web interface template
+├── static/              # Static assets for the web interface
+│   └── styles.css       # CSS styles for the web interface
+├── templates/           # HTML templates for the web interface
+│   └── index.html       # Main web interface template
+├── test_results/        # Directory for storing test results
+└── certs/               # Directory for SSL certificates
 ```
 
 ## Installation
@@ -49,7 +55,7 @@ cartesia-poc/
 4. Set up environment variables:
    ```bash
    cp .env.example .env
-   # Edit .env and add your Hugging Face token
+   # Edit .env and add your Hugging Face token and Cartesia API key
    ```
 
 ## Environment Configuration
@@ -60,6 +66,9 @@ The application uses environment variables for configuration. Create a `.env` fi
 # Hugging Face API token - replace with your own token
 HF_TOKEN=your_huggingface_token_here
 
+# Cartesia API key - required for Text-to-Speech functionality
+CARTESIA_API_KEY=your_cartesia_api_key_here
+
 # Server configuration
 SERVER_HOST=0.0.0.0
 SERVER_PORT=8080
@@ -68,7 +77,9 @@ SERVER_PORT=8080
 DEFAULT_MODEL=rene
 ```
 
-You'll need a Hugging Face token with read access to download models from the Hugging Face Hub.
+You'll need:
+- A Hugging Face token with read access to download models from the Hugging Face Hub.
+- A Cartesia API key to access the Text-to-Speech service. You can obtain this key by registering at [Cartesia's developer portal](https://cartesia.ai/developers).
 
 ## Usage
 
@@ -118,8 +129,19 @@ The web interface provides:
 1. **Text Generation**: Interactive testing of Cartesia models
 2. **Testing Framework**: Interface to run standardized tests
 3. **System Information**: Details about the current system state
+4. **Text-to-Speech**: Convert generated text to speech using Cartesia's TTS API
 
 Access the web interface at http://localhost:8080 when the server is running.
+
+### Text-to-Speech Functionality
+
+The TTS tab in the web interface allows you to:
+- Convert any text to speech using Cartesia's TTS API
+- Select from various voice options
+- Customize audio parameters
+- Play or download the generated audio
+
+Note: TTS functionality requires a valid Cartesia API key to be set in your `.env` file.
 
 ## Performance Metrics
 
