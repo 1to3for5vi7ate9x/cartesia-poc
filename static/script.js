@@ -43,6 +43,7 @@ document.getElementById('generate').addEventListener('click', async () => {
     document.getElementById('load-time').textContent = '-';
     document.getElementById('gen-time').textContent = '-';
     document.getElementById('output-length').textContent = '-';
+    document.getElementById('token-speed').textContent = '-';
     
     const startTime = performance.now();
     
@@ -94,6 +95,11 @@ document.getElementById('generate').addEventListener('click', async () => {
         const genTime = Math.round(totalTime * 0.7);  // Assume 70% of time is generation
         document.getElementById('load-time').textContent = loadTime;
         document.getElementById('gen-time').textContent = genTime;
+        
+        // Calculate tokens per second (estimate 4 characters per token)
+        const estimatedTokens = Math.round(generatedText.length / 4);
+        const tokenSpeed = genTime > 0 ? Math.round((estimatedTokens / genTime) * 1000) : 0;
+        document.getElementById('token-speed').textContent = tokenSpeed;
         
         statusEl.textContent = 'Generation complete.';
         statusEl.classList.add('success');
