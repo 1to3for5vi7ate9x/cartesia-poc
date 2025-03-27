@@ -94,21 +94,49 @@ def process_request():
         }
     # --- End Hybrid Routing Logic ---
 
-    # Simulate processing delay (replace with actual processing later)
-    import time
-    time.sleep(0.5)
-    
-    # Placeholder response - include routing decision
-    response_text = f"Server received: '{query}'. Ideal location: {ideal_location.value}. (Reason: {decision_meta.get('reason', 'N/A')})"
+    # --- Actual Processing Logic (Server-Side) ---
+    actual_result = "Processing error." # Default error message
+    try:
+        # For now, always process on server regardless of ideal_location
+        # Load the default model (e.g., 'rene')
+        model_name = 'rene' # Or get from config/request if needed
+        model = load_model(model_name)
+        
+        # Generate response using the model
+        # Note: generate_text returns a generator for streaming,
+        # but for a simple JSON response, we'll collect the full text.
+        generated_chunks = []
+        # Use a simple prompt structure for now
+        prompt_for_ssm = f"User query: {query}\nResponse:"
+        for chunk in generate_text(model, prompt_for_ssm, max_tokens=150): # Limit tokens
+            generated_chunks.append(chunk)
+        actual_result = "".join(generated_chunks).strip()
+        
+        # Basic post-processing: remove the prompt if the model echoes it
+        if actual_result.startswith(prompt_for_ssm):
+             actual_result = actual_result[len(prompt_for_ssm):].strip()
+        elif actual_result.startswith(query): # Handle simple echo
+             actual_result = actual_result[len(query):].strip()
+
+        log_event("pwa_ssm_generation_success", {
+            "model": model_name,
+            "result_length": len(actual_result)
+        })
+
+    except Exception as proc_error:
+        log_event("pwa_ssm_processing_error", {"error": str(proc_error)})
+        traceback.print_exc()
+        actual_result = f"Error processing query with SSM: {str(proc_error)}"
+    # --- End Actual Processing Logic ---
     
     log_event("pwa_response_sent", {
-        "response_length": len(response_text),
+        "response_length": len(actual_result),
         "ideal_location": ideal_location.value,
         "actual_location": ProcessingLocation.SERVER.value # Hardcoded for now
     })
     
     return jsonify({
-        'result': response_text,
+        'result': actual_result, # Return the actual result from SSM
         'ideal_processing_location': ideal_location.value,
         'actual_processing_location': ProcessingLocation.SERVER.value, # Hardcoded for now
         'routing_metadata': decision_meta
