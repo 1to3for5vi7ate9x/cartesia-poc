@@ -138,7 +138,49 @@ def classify_device_resource_state(resource_state):
     # Default to adequate
     return DeviceResourceState.ADEQUATE
 
-def select_processing_location(command_text, context=None, forced_location=None):
+# Placeholder functions for client-side metric classification (to be implemented)
+def classify_network_condition_from_client(client_network_metrics):
+    # TODO: Implement logic based on client_network_metrics (effectiveType, rtt, downlink)
+    print(f"DEBUG: Classifying network from client: {client_network_metrics}") # Debug print
+    if not client_network_metrics or client_network_metrics.get('effectiveType') == 'unknown':
+        return NetworkCondition.UNKNOWN
+    effective_type = client_network_metrics.get('effectiveType')
+    if effective_type == 'offline': return NetworkCondition.OFFLINE
+    if effective_type == 'slow-2g' or effective_type == '2g': return NetworkCondition.POOR
+    if effective_type == '3g': return NetworkCondition.FAIR
+    if effective_type == '4g': return NetworkCondition.GOOD # Treat 4g as good/excellent base
+    # Could add checks for rtt/downlink if available for finer classification
+    return NetworkCondition.GOOD # Default assumption if type is known but not matched
+
+def classify_device_resource_state_from_client(client_metrics):
+    # TODO: Implement logic based on client_metrics (memoryGB, battery.level)
+    print(f"DEBUG: Classifying device state from client: {client_metrics}") # Debug print
+    if not client_metrics:
+        return DeviceResourceState.UNKNOWN
+        
+    memory_gb = client_metrics.get('memory', {}).get('memoryGB')
+    battery_info = client_metrics.get('battery', {})
+    battery_level = battery_info.get('level')
+    # cpu_load = client_metrics.get('cpu', {}).get('load') # Currently always 'unknown'
+
+    # Critical check (low battery or very low memory)
+    if (battery_level is not None and battery_level < 15) or \
+       (memory_gb is not None and memory_gb < 0.5): # Less than 512MB
+        return DeviceResourceState.CRITICAL
+        
+    # Constrained check (medium battery or low memory)
+    if (battery_level is not None and battery_level < 30) or \
+       (memory_gb is not None and memory_gb < 1): # Less than 1GB
+        return DeviceResourceState.CONSTRAINED
+        
+    # Optimal check (high battery and high memory)
+    if (battery_level is None or battery_level > 70) and \
+       (memory_gb is None or memory_gb >= 4): # 4GB+ memory
+        return DeviceResourceState.OPTIMAL
+        
+    return DeviceResourceState.ADEQUATE # Default
+
+def select_processing_location(command_text, context=None, forced_location=None, client_metrics=None): # Added client_metrics
     """
     Intelligently select the optimal processing location based on:
     - Command complexity
@@ -170,17 +212,28 @@ def select_processing_location(command_text, context=None, forced_location=None)
             # Invalid forced location, continue with automatic selection
             pass
     
-    # Get current conditions
-    resource_state = get_device_resource_state()
-    network_info = estimate_network_quality()
+    metrics_source = "server" # Track where metrics came from
     
-    # Classify conditions
+    # --- Use Client Metrics if available ---
+    if client_metrics:
+        metrics_source = "client"
+        print("DEBUG: Using client metrics for routing decision") # Debug print
+        network_condition = classify_network_condition_from_client(client_metrics.get('network'))
+        device_state = classify_device_resource_state_from_client(client_metrics)
+    else:
+        # --- Fallback to Server Metrics ---
+        print("DEBUG: Using server metrics for routing decision") # Debug print
+        resource_state = get_device_resource_state()
+        network_info = estimate_network_quality()
+        network_condition = classify_network_condition(network_info)
+        device_state = classify_device_resource_state(resource_state)
+        
+    # Estimate command complexity (always done on server)
     command_complexity = estimate_command_complexity(command_text)
-    network_condition = classify_network_condition(network_info)
-    device_state = classify_device_resource_state(resource_state)
     
     # Log the context of the decision
     log_event("processing_location_context", {
+        "metrics_source": metrics_source, # Added source
         "command_complexity": command_complexity.value,
         "network_condition": network_condition.value,
         "device_state": device_state.value,

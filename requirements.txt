@@ -5,6 +5,7 @@ git+https://github.com/cartesia-ai/edge.git@main#subdirectory=cartesia-mlx  # Ca
 # Server dependencies
 flask>=2.0.0
 jinja2>=3.0.0
+flask-cors>=4.0.0 # Added for PWA communication
 
 # Hugging Face dependencies
 huggingface-hub>=0.19.0

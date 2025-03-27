@@ -2,6 +2,7 @@
 Flask server implementation for the Cartesia State Space Model (SSM) PoC
 """
 from flask import Flask, request, jsonify, render_template, send_file
+from flask_cors import CORS # Import CORS
 import io
 import os
 import socket
@@ -12,11 +13,13 @@ from flask import Flask, request, jsonify, render_template
 
 from config import SERVER_CONFIG, PERFORMANCE_TARGETS
 from model_loader import load_model, get_model_compatibility, generate_text
+# Updated import for hybrid router
 from hybrid_router import ProcessingLocation, select_processing_location
 from utils import log_event, get_system_info, get_network_info, get_device_resource_state
 
 # Initialize Flask app
 app = Flask(__name__, template_folder='templates')
+CORS(app) # Enable CORS for all routes
 
 @app.route('/')
 def home():
@@ -51,6 +54,65 @@ def system_info():
     }
     
     return jsonify(info)
+
+@app.route('/api/process-request', methods=['POST'])
+def process_request():
+    """Handle requests from the PWA"""
+    data = request.json
+    query = data.get('query', '')
+    client_metrics = data.get('client_metrics', None) # Extract client metrics
+    
+    if not query:
+        log_event("pwa_request_error", {"error": "No query provided"})
+        return jsonify({'error': 'No query provided'}), 400
+        
+    log_event("pwa_request_received", {
+        "query": query,
+        "has_client_metrics": client_metrics is not None
+    })
+
+    # --- Hybrid Routing Logic ---
+    # Determine the ideal processing location
+    # Note: For now, we still process on the server regardless of the decision.
+    #       We just report the decision back to the client.
+    try:
+        # Pass client_metrics to the routing function
+        ideal_location, decision_meta = select_processing_location(
+            query,
+            client_metrics=client_metrics
+        )
+        log_event("pwa_routing_decision", decision_meta)
+    except Exception as e:
+        log_event("pwa_routing_error", {"error": str(e)})
+        traceback.print_exc()
+        # Default to server if routing fails
+        ideal_location = ProcessingLocation.SERVER
+        decision_meta = {
+            "decision": ProcessingLocation.SERVER.value,
+            "reason": f"Error during routing decision: {str(e)}",
+            "decision_time_ms": 0
+        }
+    # --- End Hybrid Routing Logic ---
+
+    # Simulate processing delay (replace with actual processing later)
+    import time
+    time.sleep(0.5)
+    
+    # Placeholder response - include routing decision
+    response_text = f"Server received: '{query}'. Ideal location: {ideal_location.value}. (Reason: {decision_meta.get('reason', 'N/A')})"
+    
+    log_event("pwa_response_sent", {
+        "response_length": len(response_text),
+        "ideal_location": ideal_location.value,
+        "actual_location": ProcessingLocation.SERVER.value # Hardcoded for now
+    })
+    
+    return jsonify({
+        'result': response_text,
+        'ideal_processing_location': ideal_location.value,
+        'actual_processing_location': ProcessingLocation.SERVER.value, # Hardcoded for now
+        'routing_metadata': decision_meta
+    })
 
 @app.route('/generate', methods=['POST'])
 def generate():
